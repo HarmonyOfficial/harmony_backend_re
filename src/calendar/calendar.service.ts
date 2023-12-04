@@ -11,7 +11,7 @@ import { ChatGateway } from '../chat/chat.gateway';
 export class CalendarService {
   constructor(
     @InjectRepository(Task)
-    private taskRepository: Repository<Task>,
+    private TaskRepository: Repository<Task>,
     @InjectRepository(Event)
     private eventRepository: Repository<Event>,
     private chatGateway: ChatGateway, // ChatGateway 주입
@@ -25,8 +25,8 @@ export class CalendarService {
     repetition: number;
     roomId: number;
   }): Promise<Task> {
-    const task = this.taskRepository.create(taskData);
-    return this.taskRepository.save(task);
+    const task = this.TaskRepository.create(taskData);
+    return this.TaskRepository.save(task);
   }
 
   private async saveCompletionImage(
@@ -52,7 +52,7 @@ export class CalendarService {
 
   // 할일 조회
   async getTasksByRoom(roomId: number): Promise<Task[]> {
-    return this.taskRepository.find({ where: { roomId } });
+    return this.TaskRepository.find({ where: { roomId } });
   }
 
   // 일정 조회
@@ -62,8 +62,8 @@ export class CalendarService {
 
   // 할일 편집
   async editTask(taskId: number, updateData: any): Promise<Task> {
-    await this.taskRepository.update(taskId, updateData);
-    return this.taskRepository.findOne({ where: { id: taskId } });
+    await this.TaskRepository.update(taskId, updateData);
+    return this.TaskRepository.findOne({ where: { id: taskId } });
   }
 
   // 일정 편집
@@ -74,7 +74,7 @@ export class CalendarService {
 
   // 할일 삭제
   async deleteTask(taskId: number): Promise<void> {
-    await this.taskRepository.delete(taskId);
+    await this.TaskRepository.delete(taskId);
   }
 
   // 일정 삭제
@@ -88,13 +88,13 @@ export class CalendarService {
     sender: string, // 'sender' 매개변수 추가
   ): Promise<Task> {
     // 할일 완료 메시지 전송
-    const task = await this.taskRepository.findOne({ where: { id: taskId } });
+    const task = await this.TaskRepository.findOne({ where: { id: taskId } });
     if (!task) {
       throw new Error('Task not found');
     }
     const imagePath = await this.saveCompletionImage(completionImage, taskId);
     task.completionImage = imagePath;
-    await this.taskRepository.save(task);
+    await this.TaskRepository.save(task);
 
     // 할일 완료 처리
     task.completed = true;
@@ -108,11 +108,11 @@ export class CalendarService {
       message: completionMessage,
     });
 
-    return this.taskRepository.save(task);
+    return this.TaskRepository.save(task);
   }
 
   async getUserTasks(userId: number): Promise<Task[]> {
-    const tasks = await this.taskRepository.find();
+    const tasks = await this.TaskRepository.find();
     return tasks.filter((task) => task.assignees.includes(userId.toString()));
   }
 }

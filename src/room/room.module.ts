@@ -8,5 +8,6 @@ import { RoomController } from './room.controller';
   imports: [TypeOrmModule.forFeature([Room])],
   providers: [RoomService],
   controllers: [RoomController],
+  exports: [RoomService], // RoomService를 다른 모듈에서 사용할 수 있도록 추가
 })
 export class RoomModule {}

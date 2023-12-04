@@ -8,12 +8,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { RoomModule } from './room/room.module';
 import { ExpenseModule } from './expense/expense.module';
-import { CalendarService } from './calendar/calendar.service';
-import { CalendarController } from './calendar/calendar.controller';
 import { CalendarModule } from './calendar/calendar.module';
-import { ChatService } from './chat/chat.service';
-import { ChatController } from './chat/chat.controller';
-import { UsersService } from './user/user.service';
+import { ChatModule } from './chat/chat.module';
 @Module({
   imports: [
     AuthModule,
@@ -42,8 +38,9 @@ import { UsersService } from './user/user.service';
     }),
     ExpenseModule,
     CalendarModule,
+    ChatModule,
   ],
-  controllers: [AppController, CalendarController, ChatController],
-  providers: [AppService, CalendarService, ChatService, UsersService],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
