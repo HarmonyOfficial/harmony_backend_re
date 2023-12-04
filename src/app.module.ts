@@ -6,13 +6,19 @@ import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
-import { RoomService } from './room/room.service';
-import { RoomController } from './room/room.controller';
-
+import { RoomModule } from './room/room.module';
+import { ExpenseModule } from './expense/expense.module';
+import { CalendarService } from './calendar/calendar.service';
+import { CalendarController } from './calendar/calendar.controller';
+import { CalendarModule } from './calendar/calendar.module';
+import { ChatService } from './chat/chat.service';
+import { ChatController } from './chat/chat.controller';
+import { UsersService } from './user/user.service';
 @Module({
   imports: [
     AuthModule,
     UserModule,
+    RoomModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),
@@ -34,8 +40,10 @@ import { RoomController } from './room/room.controller';
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '60m' },
     }),
+    ExpenseModule,
+    CalendarModule,
   ],
-  controllers: [AppController, RoomController],
-  providers: [AppService, RoomService],
+  controllers: [AppController, CalendarController, ChatController],
+  providers: [AppService, CalendarService, ChatService, UsersService],
 })
 export class AppModule {}

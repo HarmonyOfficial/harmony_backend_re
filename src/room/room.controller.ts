@@ -1,5 +1,4 @@
-// room.controller.ts
-import { Controller, Post, Body, Param, Get } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param } from '@nestjs/common';
 import { RoomService } from './room.service';
 
 @Controller('room')
@@ -7,30 +6,43 @@ export class RoomController {
   constructor(private readonly roomService: RoomService) {}
 
   @Post('create')
-  async createRoom(@Body() body: { name: string; password: number }) {
-    return this.roomService.createRoom(body.name, body.password);
-  }
-
-  @Post('enter/:id')
-  async enterRoom(
-    @Param('id') roomId: number,
-    @Body('password') password: number,
+  async createRoom(
+    @Body()
+    createRoomDto: {
+      name: string;
+      password: string;
+      members: number[];
+    },
   ) {
-    return this.roomService.enterRoom(roomId, password);
+    return this.roomService.createRoom(
+      createRoomDto.name,
+      createRoomDto.password,
+      createRoomDto.members,
+    );
   }
 
-  @Get('members/:uid')
-  async getRoomByUserId(@Param('uid') uid: number) {
-    return this.roomService.getRoomsByUserId(uid);
+  @Post('enter')
+  async enterRoom(@Body() enterRoomDto: { roomId: number; userId: number }) {
+    return this.roomService.enterRoom(enterRoomDto.roomId, enterRoomDto.userId);
   }
-  // 방의 이름을 id로 조회하는 엔드포인트
-  @Get(':id')
-  async getRoomById(@Param('id') roomId: number) {
-    return this.roomService.getRoomById(roomId);
+
+  @Post('leave')
+  async leaveRoom(@Body() leaveRoomDto: { roomId: number; userId: number }) {
+    return this.roomService.leaveRoom(leaveRoomDto.roomId, leaveRoomDto.userId);
   }
-  // 방의 맴버를 모두 조회하는 엔드포인트
-  @Get(':id/members')
-  async getRoomMembers(@Param('id') roomId: number) {
+
+  @Get('name')
+  async getRoomName(@Body() roomInfo: { roomId: number; password: string }) {
+    return this.roomService.getRoomName(roomInfo.roomId, roomInfo.password);
+  }
+
+  @Get('find-rooms/:uid')
+  async getUserRooms(@Param('uid') userId: number) {
+    return this.roomService.getUserRooms(userId);
+  }
+
+  @Get('members/:roomId')
+  async getRoomMembers(@Param('roomId') roomId: number) {
     return this.roomService.getRoomMembers(roomId);
   }
 }
