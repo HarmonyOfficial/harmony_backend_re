@@ -5,11 +5,9 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../user/user.service';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import axios from 'axios';
 import * as jwt from 'jsonwebtoken';
-import {ConfigService} from "@nestjs/config";
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -34,7 +32,7 @@ export class AuthService {
     const user = await this.userService.getUserByUUID(userProfile.uid);
 
     const payload = { id: user.id };
-    const accessToken = this.jwtService.sign(payload,{
+    const accessToken = this.jwtService.sign(payload, {
       secret: this.configService.get('ACCESS_TOKEN_SECRET'),
     });
     const refreshToken = this.jwtService.sign(payload, {
@@ -42,7 +40,7 @@ export class AuthService {
       expiresIn: '7d',
     });
 
-    await this.userService.setCurrentRefreshToken(refreshToken, userProfile.id)
+    await this.userService.setCurrentRefreshToken(refreshToken, userProfile.id);
 
     return {
       accessToken: accessToken,
@@ -79,7 +77,7 @@ export class AuthService {
     }
 
     const payload = { id: user.id };
-    const access_token = this.jwtService.sign(payload,{
+    const access_token = this.jwtService.sign(payload, {
       secret: this.configService.get('ACCESS_TOKEN_SECRET'),
     });
     const refresh_token = this.jwtService.sign(payload, {
@@ -87,7 +85,7 @@ export class AuthService {
       expiresIn: '7d',
     });
 
-    await this.userService.setCurrentRefreshToken(refresh_token, user.id)
+    await this.userService.setCurrentRefreshToken(refresh_token, user.id);
 
     return {
       accessToken: access_token,
@@ -100,9 +98,7 @@ export class AuthService {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
 
-    const {
-      id,
-    } = data;
+    const { id } = data;
     return {
       uid: `kakao:${id}`,
     };

@@ -5,12 +5,13 @@ import {
   UploadedFile,
   Body,
   UseGuards,
-  Request, Patch,
+  Request,
+  Patch,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from './multer.config';
 import { UsersService } from './user.service';
-import {AccessGuard} from "../auth/access.guard";
+import { AccessGuard } from '../auth/access.guard';
 @Controller('user')
 export class UserController {
   constructor(private readonly usersService: UsersService) {}
@@ -29,7 +30,7 @@ export class UserController {
     const { name, profile_picture } = body;
 
     // 데이터베이스에 사용자 정보 저장
-    await this.usersService.updateUser(id,{
+    await this.usersService.updateUser(id, {
       name: name,
       profileImage: profile_picture,
     });
