@@ -25,7 +25,7 @@ export class RoomService {
     return roomId;
   }
   generateRandomId(): any {
-    throw new Error('Method not implemented.');
+    return Math.floor(Math.random() * 100000);
   }
 
   async createRoom(
