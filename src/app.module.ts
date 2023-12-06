@@ -26,8 +26,8 @@ import { AuthModule } from './auth/auth.module';
         host: "127.0.0.1",
         port: 3306, // Change the port value to a number
         username: "root",
-        password: "hiamhm0707",
-        database: "harmony2",
+        password: "oys200603",
+        database: "harmony_re",
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: true,
       }),

@@ -22,28 +22,28 @@ export class RoomController {
     createRoomDto: {
       name: string;
       password: string;
-      members: number[];
+      members: string[];
     },
   ) {
-    const userId = req.user.userId; // JWT 토큰에서 userId 추출
+    const userId = req.user.id; // JWT 토큰에서 userId 추출
     return this.roomService.createRoom(
       createRoomDto.name,
       createRoomDto.password,
-      [...createRoomDto.members, userId], // 사용자 ID를 멤버 목록에 추가
+      userId,
     );
   }
 
   @Post('enter')
   @UseGuards(AccessGuard)
   async enterRoom(@Request() req, @Body() body: { roomId: number }) {
-    const userId = req.user.userId; // JWT 토큰에서 userId 추출
+    const userId = req.user.id; // JWT 토큰에서 userId 추출
     return this.roomService.enterRoom(body.roomId, userId);
   }
 
   @Post('leave')
   @UseGuards(AccessGuard)
   async leaveRoom(@Request() req, @Body() body: { roomId: number }) {
-    const userId = req.user.userId; // JWT 토큰에서 userId 추출
+    const userId = req.user.id; // JWT 토큰에서 userId 추출
     return this.roomService.leaveRoom(body.roomId, userId);
   }
 
@@ -55,7 +55,7 @@ export class RoomController {
   @Get('find-rooms')
   @UseGuards(AccessGuard)
   async getUserRooms(@Request() req) {
-    const userId = req.user.userId; // JWT 토큰에서 userId 추출
+    const userId = req.user.id; // JWT 토큰에서 userId 추출
     return this.roomService.getUserRooms(userId);
   }
 

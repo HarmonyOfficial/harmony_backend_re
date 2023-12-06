@@ -12,5 +12,5 @@ export class Room {
   password: string;
 
   @Column('simple-array')
-  members: number[];
+  members: string[];
 }

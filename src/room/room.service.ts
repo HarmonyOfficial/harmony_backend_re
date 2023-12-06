@@ -31,7 +31,7 @@ export class RoomService {
   async createRoom(
     name: string,
     password: string,
-    members: number[],
+    members: string[],
   ): Promise<Room> {
     const newRoom = this.roomRepository.create({
       id: await this.generateUniqueRoomId(), // 중복 확인 로직 추가
@@ -42,7 +42,7 @@ export class RoomService {
     return this.roomRepository.save(newRoom);
   }
 
-  async enterRoom(roomId: number, userId: number): Promise<string> {
+  async enterRoom(roomId: number, userId: string): Promise<string> {
     const room = await this.roomRepository.findOne({ where: { id: roomId } });
     if (!room) {
       return 'Room not found';
@@ -52,7 +52,7 @@ export class RoomService {
     return 'Entered room successfully';
   }
 
-  async leaveRoom(roomId: number, userId: number): Promise<string> {
+  async leaveRoom(roomId: number, userId: string): Promise<string> {
     const room = await this.roomRepository.findOne({ where: { id: roomId } });
     if (!room) {
       return 'Room not found';
@@ -71,14 +71,14 @@ export class RoomService {
     }
   }
 
-  async getUserRooms(userId: number): Promise<number[]> {
+  async getUserRooms(userId: string): Promise<Number[]> {
     const rooms = await this.roomRepository.find();
     return rooms
       .filter((room) => room.members.includes(userId))
       .map((room) => room.id);
   }
 
-  async getRoomMembers(roomId: number): Promise<number[]> {
+  async getRoomMembers(roomId: number): Promise<string[]> {
     const room = await this.roomRepository.findOne({ where: { id: roomId } });
     if (!room) {
       throw new Error('Room not found');
