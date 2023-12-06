@@ -1,6 +1,7 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import {Body, Controller, Get, Post, Req, Res, UseGuards} from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { Response } from 'express';
+import {Request, Response} from 'express';
+import {JwtRefreshGuard} from "./jwt-refresh.guard";
 
 @Controller('auth')
 export class AuthController {
@@ -30,7 +31,7 @@ export class AuthController {
 
   @UseGuards(JwtRefreshGuard)
   @Get('refresh')
-  async refresh(@Res({ passthrough: true }) res: Response) {
+  async refresh(@Res({ passthrough: true }) res: Response, @Req() req: Request) {
     const { refresh_token } = req.cookies;
 
     // JWT를 사용하여 토큰을 검증하고 처리

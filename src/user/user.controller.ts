@@ -10,7 +10,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from './multer.config';
 import { UsersService } from './user.service';
-import { JwtStrategy } from '../auth/jwt-auth.guard';
+import { JwtStrategy } from '../auth/jwt.strategy';
 
 @Controller('user')
 export class UserController {

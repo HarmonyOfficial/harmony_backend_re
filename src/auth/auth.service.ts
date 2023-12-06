@@ -10,6 +10,7 @@ import { TemporaryUser } from './temporary-user.entity';
 import { Repository } from 'typeorm';
 import axios from 'axios';
 import * as jwt from 'jsonwebtoken';
+import {ConfigService} from "@nestjs/config";
 
 @Injectable()
 export class AuthService {
@@ -18,6 +19,8 @@ export class AuthService {
     private temporaryUserRepository: Repository<TemporaryUser>,
     private userService: UsersService,
     private jwtService: JwtService,
+    private readonly configService: ConfigService,
+
   ) {}
 
   async validateOAuthLogin(accessToken: string, vendor: string): Promise<any> {
@@ -37,10 +40,17 @@ export class AuthService {
       await this.createOrUpdateTemporaryUser(userProfile.uid, userProfile);
     }
 
-    const payload = { uid: userProfile.uid };
+    const payload = { id: userProfile.user_uuid, username: userProfile.name };
+    const access_token = this.jwtService.sign(payload,{
+      secret: this.configService.get('ACCESS_TOKEN_SECRET'),
+    });
+    const refresh_token = this.jwtService.sign(payload, {
+      secret: this.configService.get('REFRESH_TOKEN_SECRET'),
+      expiresIn: '7d',
+    });
     return {
-      access_token: this.jwtService.sign(payload),
-      refresh_token: this.jwtService.sign(payload, { expiresIn: '7d' }),
+      accessToken: access_token,
+      refreshToken: refresh_token,
       userExists,
     };
   }
@@ -59,6 +69,31 @@ export class AuthService {
       default:
         throw new Error('Not supported vendor');
     }
+  }
+
+  async refresh(refreshToken: string): Promise<any> {
+    const { id } = this.jwtService.verify(refreshToken, {
+      secret: process.env.REFRESH_TOKEN_SECRET,
+    });
+
+    const user = await this.userService.getUserById(id);
+
+    if (!user) {
+      throw new BadRequestException('Invalid refresh token');
+    }
+
+    const payload = { id: user.id, username: user.name };
+    const access_token = this.jwtService.sign(payload,{
+      secret: this.configService.get('ACCESS_TOKEN_SECRET'),
+    });
+    const refresh_token = this.jwtService.sign(payload, {
+      secret: this.configService.get('REFRESH_TOKEN_SECRET'),
+      expiresIn: '7d',
+    });
+    return {
+      accessToken: access_token,
+      refreshToken: refresh_token,
+    };
   }
 
   async createOrUpdateTemporaryUser(

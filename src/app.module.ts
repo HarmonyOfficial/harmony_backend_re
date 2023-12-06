@@ -26,14 +26,14 @@ import { AuthModule } from './auth/auth.module';
         host: "127.0.0.1",
         port: 3306, // Change the port value to a number
         username: "root",
-        password: "oys200603",
-        database: "harmony_re",
+        password: "hiamhm0707",
+        database: "harmony",
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: true,
       }),
     }),
     JwtModule.register({
-      secret: process.env.JWT_SECRET,
+      secret: process.env.ACCESS_TOKEN_SECRET,
       signOptions: { expiresIn: '60m' },
     }),
     ExpenseModule,

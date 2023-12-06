@@ -1,5 +1,6 @@
 // user.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import {Entity, PrimaryGeneratedColumn, Column, OneToOne} from 'typeorm';
+import {Room} from "../room/room.entity";
 
 @Entity()
 export class User {
@@ -17,6 +18,13 @@ export class User {
 
   @Column({ nullable: true })
   profileImage: string;
-  rooms: any;
-  exists: any;
+
+  @Column({ nullable: true })
+  roomId: number;
+
+  @Column({ nullable: true })
+  exists: boolean;
+
+  @Column({ nullable: true })
+  currentHashedRefreshToken?: string;
 }
