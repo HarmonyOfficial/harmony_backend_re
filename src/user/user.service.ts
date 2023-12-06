@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
-import {compare, hash} from 'bcrypt';
+import { compare, hash } from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -25,7 +25,7 @@ export class UsersService {
     return !!user.name && !!user.profileImage;
   }
 
-  async updateUser(id:number, userData: any): Promise<User> {
+  async updateUser(id: number, userData: any): Promise<User> {
     const user = await this.getUserById(id);
 
     user.name = userData.name;
@@ -38,8 +38,8 @@ export class UsersService {
     const user = await this.getUserById(id);
 
     const isRefreshTokenMatching = await compare(
-        refreshToken,
-        user.currentHashedRefreshToken,
+      refreshToken,
+      user.currentHashedRefreshToken,
     );
 
     if (isRefreshTokenMatching) {
@@ -48,7 +48,7 @@ export class UsersService {
   }
 
   async getUserById(id: number) {
-    return this.userRepository.findOne({where: {id}});
+    return this.userRepository.findOne({ where: { id } });
   }
 
   async removeRefreshToken(id: number) {
@@ -62,8 +62,9 @@ export class UsersService {
     await this.userRepository.update(id, { currentHashedRefreshToken });
   }
 
+  // eslint-disable-next-line prettier/prettier
   async createUser(uid:string): Promise<User> {
-    const user = {uid};
+    const user = { uid };
     return this.userRepository.save(user);
   }
 
