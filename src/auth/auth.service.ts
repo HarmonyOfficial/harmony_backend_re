@@ -42,7 +42,7 @@ export class AuthService {
       expiresIn: '7d',
     });
 
-    await this.userService.setCurrentRefreshToken(refreshToken, userProfile.id)
+    await this.userService.setCurrentRefreshToken(refreshToken, user.id)
 
     return {
       accessToken: accessToken,
