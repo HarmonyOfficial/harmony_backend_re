@@ -8,7 +8,7 @@ import {
   Request,
 } from '@nestjs/common';
 import { RoomService } from './room.service';
-import { AccessGuard } from '../auth/jwt-auth.guard';
+import { AccessGuard } from '../auth/access.guard';
 
 @Controller('room')
 export class RoomController {

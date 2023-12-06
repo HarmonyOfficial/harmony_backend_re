@@ -6,7 +6,6 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
-import { TemporaryUser } from './temporary-user.entity';
 import { Repository } from 'typeorm';
 import axios from 'axios';
 import * as jwt from 'jsonwebtoken';
@@ -15,43 +14,40 @@ import {ConfigService} from "@nestjs/config";
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(TemporaryUser)
-    private temporaryUserRepository: Repository<TemporaryUser>,
     private userService: UsersService,
     private jwtService: JwtService,
     private readonly configService: ConfigService,
-
   ) {}
 
-  async validateOAuthLogin(accessToken: string, vendor: string): Promise<any> {
-    if (!accessToken || !vendor) {
+  async login(token: string, vendor: string): Promise<any> {
+    if (!token || !vendor) {
       throw new BadRequestException('Access token or vendor is missing');
     }
 
-    let userProfile;
-    try {
-      userProfile = await this.getExternalUserData(accessToken, vendor);
-    } catch (error) {
-      throw new InternalServerErrorException('Failed to fetch user data');
-    }
+    const userProfile = await this.getExternalUserData(token, vendor);
 
     const userExists = await this.userService.userExists(userProfile.uid);
     if (!userExists) {
-      await this.createOrUpdateTemporaryUser(userProfile.uid, userProfile);
+      await this.userService.createUser(userProfile.uid);
     }
 
-    const payload = { id: userProfile.user_uuid, username: userProfile.name };
-    const access_token = this.jwtService.sign(payload,{
+    const user = await this.userService.getUserByUUID(userProfile.uid);
+
+    const payload = { id: user.id };
+    const accessToken = this.jwtService.sign(payload,{
       secret: this.configService.get('ACCESS_TOKEN_SECRET'),
     });
-    const refresh_token = this.jwtService.sign(payload, {
+    const refreshToken = this.jwtService.sign(payload, {
       secret: this.configService.get('REFRESH_TOKEN_SECRET'),
       expiresIn: '7d',
     });
+
+    await this.userService.setCurrentRefreshToken(refreshToken, userProfile.id)
+
     return {
-      accessToken: access_token,
-      refreshToken: refresh_token,
-      userExists,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      profileComplete: this.userService.checkProfileComplete(user.id),
     };
   }
 
@@ -82,7 +78,7 @@ export class AuthService {
       throw new BadRequestException('Invalid refresh token');
     }
 
-    const payload = { id: user.id, username: user.name };
+    const payload = { id: user.id };
     const access_token = this.jwtService.sign(payload,{
       secret: this.configService.get('ACCESS_TOKEN_SECRET'),
     });
@@ -90,31 +86,13 @@ export class AuthService {
       secret: this.configService.get('REFRESH_TOKEN_SECRET'),
       expiresIn: '7d',
     });
+
+    await this.userService.setCurrentRefreshToken(refresh_token, user.id)
+
     return {
       accessToken: access_token,
       refreshToken: refresh_token,
     };
-  }
-
-  async createOrUpdateTemporaryUser(
-    uid: string,
-    userData: any,
-  ): Promise<TemporaryUser> {
-    let tempUser = await this.temporaryUserRepository.findOne({
-      where: { uid },
-    });
-
-    if (tempUser) {
-      tempUser.userData = userData;
-    } else {
-      tempUser = this.temporaryUserRepository.create({ uid, userData });
-    }
-
-    return this.temporaryUserRepository.save(tempUser);
-  }
-
-  async getTemporaryUser(uid: string): Promise<TemporaryUser> {
-    return this.temporaryUserRepository.findOne({ where: { uid } });
   }
 
   async getKakaoUserData(accessToken: string): Promise<any> {
@@ -124,12 +102,9 @@ export class AuthService {
 
     const {
       id,
-      kakao_account: { profile },
     } = data;
     return {
       uid: `kakao:${id}`,
-      name: profile.nickname,
-      profileImage: profile.profile_image_url,
     };
   }
 

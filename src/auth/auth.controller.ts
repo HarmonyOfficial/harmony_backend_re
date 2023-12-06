@@ -9,22 +9,22 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() body, @Res({ passthrough: true }) res: Response) {
-    const { access_token, vendor } = body;
+    const { accessToken, vendor } = body;
 
     // AuthService를 사용하여 토큰과 사용자 정보를 검증하고 처리
-    const result = await this.authService.validateOAuthLogin(
-      access_token,
+    const result = await this.authService.login(
+      accessToken,
       vendor,
     );
 
-    res.cookie('refresh_token', result.refresh_token, {
+    res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
     });
 
     return {
-      access_token: result.access_token, // 새로 생성된 JWT 액세스 토큰
+      accessToken: result.accessToken, // 새로 생성된 JWT 액세스 토큰
       exists: result.userExists, // 사용자가 데이터베이스에 존재하는지 여부
     };
   }

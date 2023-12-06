@@ -2,15 +2,16 @@ import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { UsersService } from '../user/user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TemporaryUser } from './temporary-user.entity';
 import {JwtRefreshStrategy} from "./jwt-refresh.strategy";
 import {JwtStrategy} from "./jwt.strategy";
 import {AuthController} from "./auth.controller";
 import {UserModule} from "../user/user.module";
+import {AuthService} from "./auth.service";
+import {JwtService} from "@nestjs/jwt";
 
 @Module({
-  imports: [PassportModule, TypeOrmModule.forFeature([TemporaryUser]),UserModule],
-  providers: [JwtRefreshStrategy,JwtStrategy,UsersService],
+  imports: [PassportModule,UserModule],
+  providers: [JwtRefreshStrategy,JwtStrategy,UsersService,AuthService,JwtService],
   controllers: [AuthController],
 
 })
