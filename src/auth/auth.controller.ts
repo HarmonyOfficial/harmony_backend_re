@@ -1,7 +1,7 @@
 import {
   Body,
   Controller,
-  Get,
+  Get, Logger,
   Post,
   Req,
   Res,
@@ -14,6 +14,8 @@ import { JwtRefreshGuard } from './jwt-refresh.guard';
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
+
+  private readonly logger = new Logger(AuthController.name);
 
   @Post('login')
   async login(@Body() body, @Res({ passthrough: true }) res: Response) {
@@ -40,19 +42,19 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
     @Req() req: Request,
   ) {
-    const { refresh_token } = req.cookies;
+    const { refreshToken } = req.cookies;
 
     // JWT를 사용하여 토큰을 검증하고 처리
-    const result = await this.authService.refresh(refresh_token);
+    const result = await this.authService.refresh(refreshToken);
 
-    res.cookie('refresh_token', result.refresh_token, {
+    res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
     });
 
     return {
-      access_token: result.access_token, // 새로 생성된 JWT 액세스 토큰
+      accessToken: result.accessToken, // 새로 생성된 JWT 액세스 토큰
     };
   }
 }

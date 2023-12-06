@@ -1,7 +1,7 @@
 import {
   Injectable,
   InternalServerErrorException,
-  BadRequestException,
+  BadRequestException, Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../user/user.service';
@@ -16,6 +16,8 @@ export class AuthService {
     private jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
+
+  private readonly logger = new Logger(AuthService.name);
 
   async login(token: string, vendor: string): Promise<any> {
     if (!token || !vendor) {
@@ -64,9 +66,9 @@ export class AuthService {
     }
   }
 
-  async refresh(refreshToken: string): Promise<any> {
-    const { id } = this.jwtService.verify(refreshToken, {
-      secret: process.env.REFRESH_TOKEN_SECRET,
+  async refresh(token: string): Promise<any> {
+    const { id } = this.jwtService.verify(token, {
+      secret: this.configService.get('REFRESH_TOKEN_SECRET'),
     });
 
     const user = await this.userService.getUserById(id);
@@ -76,19 +78,19 @@ export class AuthService {
     }
 
     const payload = { id: user.id };
-    const access_token = this.jwtService.sign(payload, {
+    const accessToken = this.jwtService.sign(payload, {
       secret: this.configService.get('ACCESS_TOKEN_SECRET'),
     });
-    const refresh_token = this.jwtService.sign(payload, {
+    const refreshToken = this.jwtService.sign(payload, {
       secret: this.configService.get('REFRESH_TOKEN_SECRET'),
       expiresIn: '7d',
     });
 
-    await this.userService.setCurrentRefreshToken(refresh_token, user.id);
+    await this.userService.setCurrentRefreshToken(refreshToken, user.id);
 
     return {
-      accessToken: access_token,
-      refreshToken: refresh_token,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
     };
   }
 
