@@ -9,28 +9,11 @@ export class UsersService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {}
-  async checkUserExists(userId: string) {
-    // 유저가 존재하는지 확인
-    const user = await this.userRepository.findOne({
-      where: { uid: userId },
-    });
-  }
 
-  async saveProfile(userId: string, name: string, profileImage: string) {
-    // 유저 정보 저장
+  async userExists(uid: string) {
     const user = await this.userRepository.findOne({
-      where: { uid: userId },
+      where: { uid },
     });
-    if (user) {
-      user.name = name;
-      user.profileImage = profileImage;
-      await this.userRepository.save(user);
-    } else {
-      await this.userRepository.save({
-        uid: userId,
-        name,
-        profileImage,
-      });
-    }
+    return !!user;
   }
 }

@@ -9,6 +9,7 @@ import { RoomModule } from './room/room.module';
 import { ExpenseModule } from './expense/expense.module';
 import { CalendarModule } from './calendar/calendar.module';
 import { ChatModule } from './chat/chat.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ChatModule } from './chat/chat.module';
     ExpenseModule,
     CalendarModule,
     ChatModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

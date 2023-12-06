@@ -11,7 +11,6 @@ import {
 @Controller('calendar')
 export class CalendarController {
   calendarService: any;
-  // ... 생성자 ...
 
   @Post('task/create')
   async createTask(
