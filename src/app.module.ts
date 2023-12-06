@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -10,9 +9,9 @@ import { RoomModule } from './room/room.module';
 import { ExpenseModule } from './expense/expense.module';
 import { CalendarModule } from './calendar/calendar.module';
 import { ChatModule } from './chat/chat.module';
+
 @Module({
   imports: [
-    AuthModule,
     UserModule,
     RoomModule,
     ConfigModule.forRoot({
@@ -22,14 +21,14 @@ import { ChatModule } from './chat/chat.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        type: 'mysql',
-        host: configService.get('DATABASE_HOST'),
-        port: +configService.get('DATABASE_PORT'),
-        username: configService.get('DATABASE_USERNAME'),
-        password: configService.get('DATABASE_PASSWORD'),
-        database: configService.get('DATABASE_NAME'),
+        type: "mysql",
+        host: "127.0.0.1",
+        port: 3306, // Change the port value to a number
+        username: "root",
+        password: "oys200603",
+        database: "harmony_re",
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true, // 개발 환경에서만 사용
+        synchronize: true,
       }),
     }),
     JwtModule.register({

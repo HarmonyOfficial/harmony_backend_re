@@ -18,4 +18,5 @@ export class User {
   @Column({ nullable: true })
   profileImage: string;
   rooms: any;
+    exists: any;
 }

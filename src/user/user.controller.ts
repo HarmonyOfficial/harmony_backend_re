@@ -1,17 +1,16 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, UseInterceptors, UploadedFile, Req } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { multerConfig } from './multer.config';
 import { UsersService } from './user.service';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post('profile')
-  async updateProfileWithKakaoToken(
-    @Body() profileData: { accessToken: string },
-  ) {
-    const updatedUser = await this.usersService.updateProfileWithKakaoToken(
-      profileData.accessToken,
-    );
-    return { message: 'Profile updated successfully', user: updatedUser };
+  @Post('profileUpload')
+  @UseInterceptors(FileInterceptor('profile', multerConfig))
+  async uploadProfile(@UploadedFile() file: Express.Multer.File) {
+    const imagePath = `uploads/profiles/${file.filename}`;
+    return { path: imagePath };
   }
 }
