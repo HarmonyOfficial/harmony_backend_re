@@ -3,7 +3,7 @@ import {User} from "../user/user.entity";
 
 @Entity()
 export class Room {
-  @Column({primary:true, unique:true})
+  @PrimaryGeneratedColumn()
   id: number;
 
   @Column()

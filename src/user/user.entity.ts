@@ -26,8 +26,5 @@ export class User {
   room: Room;
 
   @Column({ nullable: true })
-  exists: boolean;
-
-  @Column({ nullable: true })
   currentHashedRefreshToken?: string;
 }
