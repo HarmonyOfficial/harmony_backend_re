@@ -2,87 +2,84 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Room } from './room.entity';
+import {UsersService} from "../user/user.service";
+import {User} from "../user/user.entity";
 
 @Injectable()
 export class RoomService {
   constructor(
     @InjectRepository(Room)
     private roomRepository: Repository<Room>,
+    private userService: UsersService,
   ) {}
-
-  private async generateUniqueRoomId(): Promise<number> {
-    let roomId;
-    let isUnique = false;
-    while (!isUnique) {
-      roomId = this.generateRandomId();
-      const existingRoom = await this.roomRepository.findOne({
-        where: { id: roomId },
-      });
-      if (!existingRoom) {
-        isUnique = true;
-      }
-    }
-    return roomId;
-  }
-  generateRandomId(): any {
-    return Math.floor(Math.random() * 100000);
-  }
 
   async createRoom(
     name: string,
-    password: string,
-    members: string[],
+    owner: number,
   ): Promise<Room> {
+    const user = await this.userService.getUserById(owner);
+    const password = await this.generateUniqueRandomPassword();
     const newRoom = this.roomRepository.create({
-      id: await this.generateUniqueRoomId(), // 중복 확인 로직 추가
       name,
+      owner: user,
       password,
-      members,
     });
+    newRoom.members = [user];
     return this.roomRepository.save(newRoom);
   }
 
-  async enterRoom(roomId: number, userId: string): Promise<string> {
+  async enterRoom(roomId: number, userId: number): Promise<string> {
     const room = await this.roomRepository.findOne({ where: { id: roomId } });
     if (!room) {
       return 'Room not found';
     }
-    room.members.push(userId);
+    const user = await this.userService.getUserById(userId);
+    room.members.push(user);
     await this.roomRepository.save(room);
     return 'Entered room successfully';
   }
 
-  async leaveRoom(roomId: number, userId: string): Promise<string> {
+  async generateUniqueRandomPassword(): Promise<string> {
+    const randomPassword = this.generateRandomPassword();
+    const roomWithSamePassword = await this.roomRepository.findOne({ where: {password: randomPassword} });
+
+    if (roomWithSamePassword) {
+      // If a room with the generated password already exists, recursively call the function to generate a new one
+      return this.generateUniqueRandomPassword();
+    }
+
+    return randomPassword;
+  }
+
+  generateRandomPassword(): string {
+    const min = 100000; // 최소값 (6자리 숫자)
+    const max = 999999; // 최대값 (6자리 숫자)
+    return Math.floor(Math.random() * (max - min + 1)) + min + '';
+  }
+
+  async leaveRoom(roomId: number, userId: number): Promise<string> {
     const room = await this.roomRepository.findOne({ where: { id: roomId } });
     if (!room) {
       return 'Room not found';
     }
-    room.members = room.members.filter((memberId) => memberId !== userId);
+    room.members = room.members.filter((member) => member.id !== userId);
     await this.roomRepository.save(room);
     return 'Left room successfully';
   }
 
-  async getRoomName(roomId: number, password: string): Promise<string> {
-    const room = await this.roomRepository.findOne({ where: { id: roomId } });
-    if (room && room.password === password) {
-      return room.name;
-    } else {
-      return 'Incorrect password or room not found';
-    }
+  async getUserRoom(userId: number): Promise<Room> {
+    return await this.roomRepository.findOne({ where: { members: { id: userId } } });
   }
 
-  async getUserRooms(userId: string): Promise<Number[]> {
-    const rooms = await this.roomRepository.find();
-    return rooms
-      .filter((room) => room.members.includes(userId))
-      .map((room) => room.id);
-  }
-
-  async getRoomMembers(roomId: number): Promise<string[]> {
+  async getRoomMembers(roomId: number): Promise<User[]> {
     const room = await this.roomRepository.findOne({ where: { id: roomId } });
     if (!room) {
       throw new Error('Room not found');
     }
     return room.members;
+  }
+
+  async getRoomById(roomId: number): Promise<Room> {
+    return await this.roomRepository.findOne({ where: { id: roomId } });
   }
 }

@@ -1,5 +1,6 @@
 // user.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import {Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne} from 'typeorm';
+import {Room} from "../room/room.entity";
 
 @Entity()
 export class User {
@@ -18,8 +19,11 @@ export class User {
   @Column({ nullable: true })
   profileImage: string;
 
-  @Column({ nullable: true })
-  roomId: number;
+  @OneToMany(() => Room, room => room.owner)
+  ownedRooms: Room[];
+
+  @ManyToOne(() => Room, room => room.members)
+  room: Room;
 
   @Column({ nullable: true })
   exists: boolean;

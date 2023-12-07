@@ -1,8 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import {Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne} from 'typeorm';
+import {User} from "../user/user.entity";
 
 @Entity()
 export class Room {
-  @PrimaryGeneratedColumn()
+  @Column({primary:true, unique:true})
   id: number;
 
   @Column()
@@ -11,6 +12,9 @@ export class Room {
   @Column()
   password: string;
 
-  @Column('simple-array')
-  members: string[];
+  @OneToMany(() => User, user => user.room)
+  members: User[];
+
+  @ManyToOne(() => User, user => user.ownedRooms)
+  owner: User;
 }

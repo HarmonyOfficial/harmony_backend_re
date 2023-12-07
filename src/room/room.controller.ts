@@ -14,22 +14,19 @@ import { AccessGuard } from '../auth/access.guard';
 export class RoomController {
   constructor(private readonly roomService: RoomService) {}
 
-  @Post('create')
+  @Post()
   @UseGuards(AccessGuard)
   async createRoom(
     @Request() req,
     @Body()
     createRoomDto: {
       name: string;
-      password: string;
-      members: string[];
     },
   ) {
-    const userId = req.user.id; // JWT 토큰에서 userId 추출
+    const owner = req.user.id; // JWT 토큰에서 userId 추출
     return this.roomService.createRoom(
       createRoomDto.name,
-      createRoomDto.password,
-      userId,
+      owner,
     );
   }
 
@@ -47,16 +44,11 @@ export class RoomController {
     return this.roomService.leaveRoom(body.roomId, userId);
   }
 
-  @Get('name')
-  async getRoomName(@Body() roomInfo: { roomId: number; password: string }) {
-    return this.roomService.getRoomName(roomInfo.roomId, roomInfo.password);
-  }
-
-  @Get('find-rooms')
+  @Get()
   @UseGuards(AccessGuard)
-  async getUserRooms(@Request() req) {
+  async getUserRoom(@Request() req) {
     const userId = req.user.id; // JWT 토큰에서 userId 추출
-    return this.roomService.getUserRooms(userId);
+    return this.roomService.getUserRoom(userId);
   }
 
   @Get('members/:roomId')

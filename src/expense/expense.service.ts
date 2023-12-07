@@ -54,30 +54,26 @@ export class ExpenseService {
     await this.expenseRepository.delete(expenseId);
   }
 
-  async getMonthlyTotal(userId: string): Promise<number> {
-    // 사용자가 속한 방의 ID 목록을 가져옴
-    const userRoomId = await this.roomService.getUserRooms(userId);
-    // 각 방의 월별 지출 총액을 계산
-    const totalExpense = await Promise.all(
-      userRoomId.map(async (roomId) => {
-        const expenses = await this.expenseRepository.find({
-          where: { roomId: Number(roomId) },
-        });
-        const monthlyTotal = expenses.reduce((acc, expense) => {
-          const expenseDate = new Date(expense.date);
-          const today = new Date();
-          if (
-            expenseDate.getFullYear() === today.getFullYear() &&
-            expenseDate.getMonth() === today.getMonth()
-          ) {
-            return acc + expense.amount;
-          }
-          return acc;
-        }, 0);
-        return monthlyTotal;
-      }),
-    );
-    // 총액을 모두 더해서 반환
-    return totalExpense.reduce((acc, expense) => acc + expense, 0);
+  async getMonthlyTotal(userId: number): Promise<number> {
+    // 사용자가 속한 방의 ID를 가져옴
+    const userRoom = await this.roomService.getUserRoom(userId);
+    // 해당 방의 지출 목록을 가져옴
+    const expenses = await this.expenseRepository.find({
+      where: { roomId: userRoom.id },
+    });
+    // 월별 지출 총액을 계산
+    const monthlyTotal = expenses.reduce((acc, expense) => {
+      const expenseDate = new Date(expense.date);
+      const today = new Date();
+      if (
+          expenseDate.getFullYear() === today.getFullYear() &&
+          expenseDate.getMonth() === today.getMonth()
+      ) {
+        return acc + expense.amount;
+      }
+      return acc;
+    }, 0);
+    // 총액을 반환
+    return monthlyTotal;
   }
 }

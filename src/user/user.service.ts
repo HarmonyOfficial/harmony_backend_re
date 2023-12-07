@@ -71,4 +71,8 @@ export class UsersService {
   async getUserByUUID(uid: string): Promise<User> {
     return this.userRepository.findOne({ where: { uid } });
   }
+
+  async getProfile(id: number): Promise<User> {
+    return this.userRepository.findOne({ where: { id } });
+  }
 }

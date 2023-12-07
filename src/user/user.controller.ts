@@ -6,7 +6,7 @@ import {
   Body,
   UseGuards,
   Request,
-  Patch,
+  Patch, Get,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from './multer.config';
@@ -16,25 +16,22 @@ import { AccessGuard } from '../auth/access.guard';
 export class UserController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post('profileUpload')
+  @Post('profile')
+  @UseGuards(AccessGuard)
   @UseInterceptors(FileInterceptor('profile', multerConfig))
-  async uploadProfile(@UploadedFile() file: Express.Multer.File) {
+  async uploadProfile(@UploadedFile() file: Express.Multer.File, @Body() body, @Request() req) {
+    const id = req.user.id;
     const imagePath = `uploads/profiles/${file.filename}`;
-    return { path: imagePath };
+    return this.usersService.updateUser(id, {
+      name: body.name,
+      profileImage: imagePath,
+    })
   }
 
-  @Patch('profile')
+  @Get('profile')
   @UseGuards(AccessGuard)
-  async registerUser(@Request() req, @Body() body) {
-    const id = req.user.id; // JWT 토큰에서 UID 추출
-    const { name, profile_picture } = body;
-
-    // 데이터베이스에 사용자 정보 저장
-    await this.usersService.updateUser(id, {
-      name: name,
-      profileImage: profile_picture,
-    });
-
-    return { success: true };
+  async getProfile(@Request() req) {
+    const id = req.user.id;
+    return this.usersService.getProfile(id);
   }
 }

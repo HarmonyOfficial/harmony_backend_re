@@ -10,6 +10,7 @@ import {
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
 import { JwtRefreshGuard } from './jwt-refresh.guard';
+import {LoginRequest} from "./login.request";
 
 @Controller('auth')
 export class AuthController {
@@ -18,10 +19,9 @@ export class AuthController {
   private readonly logger = new Logger(AuthController.name);
 
   @Post('login')
-  async login(@Body() body, @Res({ passthrough: true }) res: Response) {
+  async login(@Body() body:LoginRequest, @Res({ passthrough: true }) res: Response) {
     const { accessToken, vendor } = body;
 
-    // AuthService를 사용하여 토큰과 사용자 정보를 검증하고 처리
     const result = await this.authService.login(accessToken, vendor);
 
     res.cookie('refreshToken', result.refreshToken, {
