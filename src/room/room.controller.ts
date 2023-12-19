@@ -5,7 +5,7 @@ import {
   Param,
   Body,
   UseGuards,
-  Request,
+  Request, Req,
 } from '@nestjs/common';
 import { RoomService } from './room.service';
 import { AccessGuard } from '../auth/access.guard';
@@ -51,9 +51,10 @@ export class RoomController {
     return this.roomService.getUserRoom(userId);
   }
 
-  @Get('members/:roomId')
+  @Get('members')
   @UseGuards(AccessGuard)
-  async getRoomMembers(@Param('roomId') roomId: number) {
-    return this.roomService.getRoomMembers(roomId);
+  async getRoomMembers(@Req() req) {
+    const userId = req.user.id; // JWT 토큰에서 userId 추출
+    return this.roomService.getRoomMembers(userId);
   }
 }

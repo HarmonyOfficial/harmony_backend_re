@@ -5,13 +5,14 @@ import {
   UploadedFile,
   Body,
   UseGuards,
-  Request,
   Patch, Get,
+    Request
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from './multer.config';
 import { UsersService } from './user.service';
 import { AccessGuard } from '../auth/access.guard';
+
 @Controller('user')
 export class UserController {
   constructor(private readonly usersService: UsersService) {}

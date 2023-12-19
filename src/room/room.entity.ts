@@ -15,6 +15,10 @@ export class Room {
   @OneToMany(() => User, user => user.room)
   members: User[];
 
-  @ManyToOne(() => User, user => user.ownedRooms)
+  @ManyToOne(() => User)
   owner: User;
+
+  @OneToMany(() => User, user => user.pendingRoom)
+  pendingUsers: User[];
 }
+

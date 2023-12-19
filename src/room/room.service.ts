@@ -24,7 +24,7 @@ export class RoomService {
       owner: user,
       password,
     });
-    newRoom.members = [user];
+    newRoom.members.push(user);
     return this.roomRepository.save(newRoom);
   }
 
@@ -71,11 +71,19 @@ export class RoomService {
     return await this.roomRepository.findOne({ where: { members: { id: userId } } });
   }
 
-  async getRoomMembers(roomId: number): Promise<User[]> {
-    const room = await this.roomRepository.findOne({ where: { id: roomId } });
+  async getRoomMembers(userId: number): Promise<User[]> {
+    const user = await this.userService.getUserById(userId);
+    const room = await this.roomRepository.findOne({
+      where: { members: { id: userId } }
+        , relations: ['members','owner'] });
     if (!room) {
       throw new Error('Room not found');
     }
+    // room.members.forEach((member) => {
+    //   if (member.id === user.id) {
+    //     member.isMe = true;
+    //   }
+    // });
     return room.members;
   }
 

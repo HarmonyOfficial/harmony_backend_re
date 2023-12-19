@@ -19,12 +19,12 @@ export class User {
   @Column({ nullable: true })
   profileImage: string;
 
-  @OneToMany(() => Room, room => room.owner)
-  ownedRooms: Room[];
-
   @ManyToOne(() => Room, room => room.members)
   room: Room;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, select: false })
   currentHashedRefreshToken?: string;
+
+  @ManyToOne(() => Room, room => room.pendingUsers)
+  pendingRoom: Room;
 }
