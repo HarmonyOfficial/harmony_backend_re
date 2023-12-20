@@ -1,11 +1,14 @@
 import {
+  MessageBody,
+  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
-  SubscribeMessage,
 } from '@nestjs/websockets';
 import { Server } from 'socket.io';
+import { Injectable } from '@nestjs/common';
 
 @WebSocketGateway()
+@Injectable()
 export class ChatGateway {
   @WebSocketServer()
   server: Server;
@@ -16,11 +19,13 @@ export class ChatGateway {
   }
 
   @SubscribeMessage('sendMessage')
-  handleMessage(data: {
-    roomId: string;
-    sender: string;
-    message: string;
-  }): void {
+  handleMessage(
+    @MessageBody() data: { roomId: string; sender: string; message: string },
+  ): void {
+    this.server.to(data.roomId).emit('newMessage', data);
+  }
+
+  sendMessage(data: { roomId: string; sender: string; message: string }): void {
     this.server.to(data.roomId).emit('newMessage', data);
   }
 }
