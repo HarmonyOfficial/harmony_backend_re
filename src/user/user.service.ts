@@ -48,7 +48,13 @@ export class UsersService {
   }
 
   async getUserById(id: number) {
-    return this.userRepository.findOne({ where: { id } });
+    return this.userRepository.findOne({ where: { id }});
+  }
+
+  async updateJoinDate(id: number) {
+    const user = await this.getUserById(id);
+    user.joinDate = new Date();
+    return this.userRepository.save(user);
   }
 
   async removeRefreshToken(id: number) {

@@ -1,4 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {Column, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
+import {Room} from "../room/room.entity";
+import {User} from "../user/user.entity";
 
 @Entity()
 export class Event {
@@ -11,9 +13,9 @@ export class Event {
   @Column()
   name: string;
 
-  @Column('simple-array')
-  assignees: string[]; // 여러 명의 담당자
+  @ManyToMany(() => User, user => user.events)
+  attendees: User[];
 
-  @Column()
-  roomId: number; // 소속된 방의 ID
+  @ManyToOne(() => Room, room => room.events)
+  room: Room;
 }

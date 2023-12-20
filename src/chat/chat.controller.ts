@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {Body, Controller, Get, Param, Post, Req, UseGuards} from '@nestjs/common';
 import { ChatService } from './chat.service';
+import {AccessGuard} from "../auth/access.guard";
 
 @Controller('chat')
 export class ChatController {
@@ -7,17 +8,18 @@ export class ChatController {
 
   @Post('send')
   async sendMessage(
-    @Body() sendMessageDto: { roomId: number; sender: string; text: string },
+    @Body() sendMessageDto: { roomId: number; userId: number; text: string },
   ) {
     return this.chatService.sendMessage(
-      sendMessageDto.roomId,
-      sendMessageDto.sender,
+      sendMessageDto.userId,
       sendMessageDto.text,
     );
   }
 
-  @Get('room/:roomId')
-  async getMessagesByRoom(@Param('roomId') roomId: number) {
-    return this.chatService.getMessagesByRoom(roomId);
+  @Get('')
+  @UseGuards(AccessGuard)
+  async getMessagesByRoom(@Req() req) {
+    const userId = req.user.id;
+    return this.chatService.getMessages(userId);
   }
 }

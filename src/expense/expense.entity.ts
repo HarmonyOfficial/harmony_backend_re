@@ -1,4 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import {Entity, PrimaryGeneratedColumn, Column, OneToOne, ManyToOne, CreateDateColumn} from 'typeorm';
+import {User} from "../user/user.entity";
+import {Room} from "../room/room.entity";
 
 @Entity()
 export class Expense {
@@ -9,17 +11,17 @@ export class Expense {
   name: string;
 
   @Column()
-  category: string; // '식비', '주거비', '생활용품', '구독비', '기타' 등
+  category: number;
 
-  @Column()
-  date: Date;
+  @CreateDateColumn()
+  createdAt: Date;
 
-  @Column()
-  person: string; // 소비한 사람의 이름
+  @ManyToOne(() => User)
+  author:User;
 
   @Column()
   amount: number;
 
-  @Column()
-  roomId: number; // 소비가 발생한 방의 ID
+  @ManyToOne(() => Room)
+  room: Room;
 }

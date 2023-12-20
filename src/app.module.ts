@@ -12,6 +12,7 @@ import { ChatModule } from './chat/chat.module';
 import { AuthModule } from './auth/auth.module';
 import {ServeStaticModule} from "@nestjs/serve-static";
 import {join} from "path";
+import { HomeModule } from './home/home.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import {join} from "path";
     CalendarModule,
     ChatModule,
     AuthModule,
+    HomeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

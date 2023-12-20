@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Room } from './room.entity';
 import {UsersService} from "../user/user.service";
 import {User} from "../user/user.entity";
+import {Task} from "../calendar/task.entity";
 
 @Injectable()
 export class RoomService {
@@ -24,7 +25,8 @@ export class RoomService {
       owner: user,
       password,
     });
-    newRoom.members.push(user);
+    newRoom.members = [user];
+    await this.userService.updateJoinDate(owner);
     return this.roomRepository.save(newRoom);
   }
 
@@ -34,6 +36,7 @@ export class RoomService {
       return 'Room not found';
     }
     const user = await this.userService.getUserById(userId);
+    await this.userService.updateJoinDate(userId);
     room.members.push(user);
     await this.roomRepository.save(room);
     return 'Entered room successfully';
@@ -76,6 +79,7 @@ export class RoomService {
     const room = await this.roomRepository.findOne({
       where: { members: { id: userId } }
         , relations: ['members','owner'] });
+    console.log(user.room);
     if (!room) {
       throw new Error('Room not found');
     }
@@ -87,7 +91,22 @@ export class RoomService {
     return room.members;
   }
 
+  async getTasks(userId: number): Promise<Task[]> {
+    const room = await this.roomRepository.findOne({where: {members: {id: userId}}, relations: ['tasks']});
+    return room.tasks;
+  }
+
+  async getEvents(userId: number): Promise<Task[]> {
+    const room = await this.roomRepository.findOne({where: {members: {id: userId}}, relations: ['events']});
+    return room.events;
+  }
+
+
   async getRoomById(roomId: number): Promise<Room> {
     return await this.roomRepository.findOne({ where: { id: roomId } });
+  }
+
+  async getUserById(id: number) {
+    return await this.userService.getUserById(id);
   }
 }

@@ -5,52 +5,52 @@ import {
   Get,
   Param,
   Patch,
-  Post,
+  Post, Req, UseGuards,
 } from '@nestjs/common';
+import {CalendarService} from "./calendar.service";
+import {AccessGuard} from "../auth/access.guard";
 
 @Controller('calendar')
 export class CalendarController {
-  calendarService: any;
+  constructor(private calendarService: CalendarService) {}
 
-  @Post('task/create')
+  @Post('task')
+  @UseGuards(AccessGuard)
   async createTask(
-    @Body()
-    taskData: {
-      date: Date;
-      name: string;
-      assignees: string[];
-      repetition: number;
-      roomId: number;
-    },
-  ) {
-    return this.calendarService.createTask(taskData);
+    @Body() task, @Req() req) {
+    const userId = req.user.id;
+    return this.calendarService.createTask(userId,task);
   }
 
-  @Post('event/create')
-  async createEvent(
-    @Body()
-    eventData: {
-      date: Date;
-      name: string;
-      assignees: string[];
-      roomId: number;
-    },
-  ) {
-    return this.calendarService.createEvent(eventData);
+  @Post('event')
+  @UseGuards(AccessGuard)
+  async createEvent(@Req() req,
+      @Body() body ) {
+    const userId = req.user.id;
+    return this.calendarService.createEvent(userId,body);
   }
 
-  @Get('tasks/room/:roomId')
-  async getTasksByRoom(@Param('roomId') roomId: number) {
-    return this.calendarService.getTasksByRoom(roomId);
+  @Get('tasks')
+  @UseGuards(AccessGuard)
+  async getTasksByRoom(
+      @Req()  req,
+      @Param('roomId') roomId: number) {
+    const userId = req.user.id;
+    return this.calendarService.getTasks(userId);
   }
 
-  @Get('events/room/:roomId')
-  async getEventsByRoom(@Param('roomId') roomId: number) {
-    return this.calendarService.getEventsByRoom(roomId);
+  @Get('events')
+  @UseGuards(AccessGuard)
+  async getEventsByRoom(
+      @Req() req,
+      @Param('roomId') roomId: number) {
+    const userId = req.user.id;
+    return this.calendarService.getEvents(userId);
   }
 
   @Patch('task/edit/:taskId')
-  async editTask(@Param('taskId') taskId: number, @Body() updateData: any) {
+  async editTask(
+      @Param('taskId') taskId: number, @Body() updateData: any) {
     return this.calendarService.editTask(taskId, updateData);
   }
 

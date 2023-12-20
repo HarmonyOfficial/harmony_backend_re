@@ -5,32 +5,34 @@ import {
   Get,
   Param,
   Patch,
-  Post,
+  Post, Request, UseGuards
 } from '@nestjs/common';
+import {ExpenseService} from "./expense.service";
+import {AccessGuard} from "../auth/access.guard";
 
 @Controller('expense')
 export class ExpenseController {
-  expenseService: any;
-  // ... 생성자 ...
+  constructor(private expenseService: ExpenseService) {}
 
-  @Post('create')
+  @Post('')
+  @UseGuards(AccessGuard)
   async createExpense(
+      @Request() req,
     @Body()
     expenseData: {
-      roomId: number;
       name: string;
-      category: string;
-      date: Date;
-      person: string;
+      category: number;
       amount: number;
     },
   ) {
-    return this.expenseService.createExpense(expenseData.roomId, expenseData);
+    const userId = req.user.id;
+    return this.expenseService.createExpense(userId, expenseData);
   }
 
-  @Get('room/:roomId')
-  async getExpensesByRoom(@Param('roomId') roomId: number) {
-    return this.expenseService.getExpensesByRoom(roomId);
+  @Get()
+  @UseGuards(AccessGuard)
+  async getExpensesByRoom(@Request() req) {
+    return this.expenseService.getExpenses(req.user.id);
   }
 
   @Patch('edit/:expenseId')
@@ -48,9 +50,14 @@ export class ExpenseController {
     return this.expenseService.editExpense(expenseId, updateData);
   }
 
-  @Delete('delete/:expenseId')
+  @Delete(':expenseId')
   async deleteExpense(@Param('expenseId') expenseId: number) {
     await this.expenseService.deleteExpense(expenseId);
     return { message: 'Expense deleted successfully' };
+  }
+
+  @Get(':expenseId')
+  async getExpense(@Param('expenseId') expenseId: number) {
+    return this.expenseService.getExpense(expenseId);
   }
 }

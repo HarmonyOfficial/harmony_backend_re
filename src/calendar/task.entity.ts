@@ -1,4 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {Column, Entity, ManyToMany, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
+import {Room} from "../room/room.entity";
+import {User} from "../user/user.entity";
 
 @Entity()
 export class Task {
@@ -11,10 +13,12 @@ export class Task {
   @Column()
   name: string;
 
-  @Column('simple-array')
-  assignees: string[]; // 여러 명의 담당자
+  @ManyToMany(() => User, user => user.tasks)
+  attendees: User[];
 
-  @Column()
+  @Column({
+    nullable: true,
+  })
   repetition: number; // 반복일 수
 
   @Column({ default: false })
@@ -23,6 +27,6 @@ export class Task {
   @Column({ nullable: true })
   completionImage: string; // 완료 사진 (base64 인코딩된 문자열)
 
-  @Column()
-  roomId: number; // 소속된 방의 ID
+  @ManyToOne(() => Room, room => room.tasks)
+  room: Room;
 }

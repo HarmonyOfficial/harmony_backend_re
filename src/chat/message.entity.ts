@@ -1,19 +1,21 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {Column, CreateDateColumn, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn} from 'typeorm';
+import {Room} from "../room/room.entity";
+import {User} from "../user/user.entity";
 
 @Entity()
 export class Message {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  roomId: number;
+  @ManyToOne(() => Room, room => room.events)
+  room: Room;
 
-  @Column()
-  sender: string;
+  @OneToOne(() => User, user => user.id)
+  sender: User;
 
   @Column()
   text: string;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  timestamp: Date;
+  @CreateDateColumn()
+  createdAt: Date;
 }

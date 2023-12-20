@@ -6,6 +6,8 @@ import { Task } from './task.entity';
 import { join } from 'path';
 import { writeFile } from 'node:fs/promises';
 import { ChatGateway } from '../chat/chat.gateway';
+import {RoomService} from "../room/room.service";
+import {UsersService} from "../user/user.service";
 
 @Injectable()
 export class CalendarService {
@@ -15,18 +17,50 @@ export class CalendarService {
     @InjectRepository(Event)
     private eventRepository: Repository<Event>,
     private chatGateway: ChatGateway, // ChatGateway 주입
+    private roomService: RoomService, // RoomService 주입
+    private userService: UsersService, // UserService 주입
   ) {}
 
   // 할일 생성
-  async createTask(taskData: {
-    date: Date;
-    name: string;
-    assignees: string[];
-    repetition: number;
-    roomId: number;
-  }): Promise<Task> {
-    const task = this.TaskRepository.create(taskData);
+  async createTask(userId:number, taskData:any): Promise<Task> {
+    const room = await this.roomService.getUserRoom(userId);
+
+    const attendeesIds = taskData.attendees || []; // attendees가 없는 경우 빈 배열 처리
+
+    const attendees = await Promise.all(attendeesIds.map((attendeeId: number) => this.userService.getUserById(attendeeId)));
+
+    const task = this.TaskRepository.create({
+      name: taskData.name,
+      date: taskData.date,
+      repetition: taskData.repeatCount,
+      room,
+      attendees, // 담당자들을 할일의 attendees에 할당
+    });
+    taskData.attendees.forEach((attendee:number) => {
+      const user = this.userService.getUserById(attendee).then(
+        (user) => {
+          task.attendees.push(user);
+        }
+      )
+    });
     return this.TaskRepository.save(task);
+  }
+
+  async createEvent(userId: number, eventData: any): Promise<Event> {
+    const room = await this.roomService.getUserRoom(userId);
+
+    const attendeesIds = eventData.attendees || []; // attendees가 없는 경우 빈 배열 처리
+
+    const attendees = await Promise.all(attendeesIds.map((attendeeId: number) => this.userService.getUserById(attendeeId)));
+
+    const event = this.eventRepository.create({
+      name: eventData.name,
+      date: eventData.date,
+      room,
+      attendees, // 담당자들을 이벤트의 attendees에 할당
+    });
+
+    return this.eventRepository.save(event);
   }
 
   private async saveCompletionImage(
@@ -39,25 +73,22 @@ export class CalendarService {
     return imagePath;
   }
 
-  // 일정 생성
-  async createEvent(eventData: {
-    date: Date;
-    name: string;
-    assignees: string[];
-    roomId: number;
-  }): Promise<Event> {
-    const event = this.eventRepository.create(eventData as DeepPartial<Event>);
-    return this.eventRepository.save(event);
+  async getTasks(userId: number): Promise<Task[]> {
+    const room = await this.roomService.getUserRoom(userId);
+    return this.TaskRepository.find({
+      where: { room: {
+        id: room.id,
+        } }, relations: ['attendees'],
+    });
   }
 
-  // 할일 조회
-  async getTasksByRoom(roomId: number): Promise<Task[]> {
-    return this.TaskRepository.find({ where: { roomId } });
-  }
-
-  // 일정 조회
-  async getEventsByRoom(roomId: number): Promise<Event[]> {
-    return this.eventRepository.find({ where: { roomId } });
+  async getEvents(userId: number): Promise<Event[]> {
+    const room = await this.roomService.getUserRoom(userId);
+    return await this.eventRepository.find({
+      where: { room: {
+          id: room.id,
+        } }, relations: ['attendees'],
+    });
   }
 
   // 할일 편집
@@ -81,11 +112,9 @@ export class CalendarService {
   async deleteEvent(eventId: number): Promise<void> {
     await this.eventRepository.delete(eventId);
   }
-  // 할일 완료 처리
   async completeTask(
     taskId: number,
     completionImage: string,
-    sender: string, // 'sender' 매개변수 추가
   ): Promise<Task> {
     // 할일 완료 메시지 전송
     const task = await this.TaskRepository.findOne({ where: { id: taskId } });
@@ -100,19 +129,6 @@ export class CalendarService {
     task.completed = true;
     task.completionImage = completionImage;
 
-    // 할일 완료 메시지 전송
-    const completionMessage = `${sender}님이 ${task.name}를 완료했어요! 이미지: ${completionImage}`;
-    this.chatGateway.handleMessage({
-      roomId: task.roomId.toString(),
-      sender: sender,
-      message: completionMessage,
-    });
-
     return this.TaskRepository.save(task);
-  }
-
-  async getUserTasks(userId: number): Promise<Task[]> {
-    const tasks = await this.TaskRepository.find();
-    return tasks.filter((task) => task.assignees.includes(userId.toString()));
   }
 }
