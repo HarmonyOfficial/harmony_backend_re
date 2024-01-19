@@ -29,6 +29,13 @@ export class ExpenseController {
     return this.expenseService.createExpense(userId, expenseData);
   }
 
+  @Get('total')
+  @UseGuards(AccessGuard)
+  async getTotalExpense(@Request() req) {
+    const userId = req.user.id;
+    return this.expenseService.getMonthlyTotal(userId);
+  }
+
   @Get()
   @UseGuards(AccessGuard)
   async getExpensesByRoom(@Request() req) {

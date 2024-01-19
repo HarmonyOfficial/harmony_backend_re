@@ -5,16 +5,18 @@ import {
   Get,
   Param,
   Patch,
-  Post, Req, UseGuards,
+  Post, Req, UploadedFile, UseGuards, UseInterceptors,
 } from '@nestjs/common';
 import {CalendarService} from "./calendar.service";
 import {AccessGuard} from "../auth/access.guard";
+import {FileInterceptor} from "@nestjs/platform-express";
+import {multerConfig} from "../user/multer.config";
 
 @Controller('calendar')
 export class CalendarController {
   constructor(private calendarService: CalendarService) {}
 
-  @Post('task')
+  @Post('taskPost')
   @UseGuards(AccessGuard)
   async createTask(
     @Body() task, @Req() req) {
@@ -22,7 +24,7 @@ export class CalendarController {
     return this.calendarService.createTask(userId,task);
   }
 
-  @Post('event')
+  @Post('eventPost')
   @UseGuards(AccessGuard)
   async createEvent(@Req() req,
       @Body() body ) {
@@ -30,22 +32,22 @@ export class CalendarController {
     return this.calendarService.createEvent(userId,body);
   }
 
-  @Get('tasks')
+  @Get('tasks/:date')
   @UseGuards(AccessGuard)
   async getTasksByRoom(
       @Req()  req,
-      @Param('roomId') roomId: number) {
+      @Param('date') date: string) {
     const userId = req.user.id;
-    return this.calendarService.getTasks(userId);
+    return this.calendarService.getTasks(userId,date);
   }
 
-  @Get('events')
+  @Get('events/:date')
   @UseGuards(AccessGuard)
   async getEventsByRoom(
       @Req() req,
-      @Param('roomId') roomId: number) {
+      @Param('date') date: string) {
     const userId = req.user.id;
-    return this.calendarService.getEvents(userId);
+    return this.calendarService.getEvents(userId,date);
   }
 
   @Patch('task/edit/:taskId')
@@ -71,11 +73,14 @@ export class CalendarController {
     return { message: 'Event deleted successfully' };
   }
   // 할일 완료
-  @Patch('task/complete/:taskId')
+  @Post('task/complete/:taskId')
+  @UseGuards(AccessGuard)
+  @UseInterceptors(FileInterceptor('image', multerConfig))
   async completeTask(
     @Param('taskId') taskId: number,
-    @Body() body: { completionImage: string },
+    @UploadedFile() file: Express.Multer.File,
   ) {
-    return this.calendarService.completeTask(taskId, body.completionImage);
+    const imagePath = `uploads/completionImages/${file.filename}`;
+    return this.calendarService.completeTask(taskId, imagePath);
   }
 }

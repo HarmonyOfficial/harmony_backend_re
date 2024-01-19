@@ -16,16 +16,18 @@ export class HomeController {
   @UseGuards(AccessGuard)
   async getUserRooms(@Request() req) {
     const userId = req.user.id; // JWT 토큰에서 userId 추출
-    const tasks = await this.roomService.getTasks(userId);
-    const events = await this.roomService.getEvents(userId);
+    const tasks = await this.calendarService.getTasks(userId, new Date().toLocaleDateString());
+    const events = await this.calendarService.getEvents(userId,new Date().toLocaleDateString())
     const totalExpense = await this.expenseService.getMonthlyTotal(userId);
     const groupMembers = await this.roomService.getRoomMembers(userId); // Fixed the variable name to 'roomService'
+    const pendingInvitations = await this.roomService.getPendingInvitations(userId); // Fixed the variable name to 'roomService'
 
     return {
       tasks,
       totalExpense,
       groupMembers,
-      events
+      events,
+      pendingInvitations,
     };
   }
 }

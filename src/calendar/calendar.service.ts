@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, Repository } from 'typeorm';
+import {DeepPartial, LessThanOrEqual, MoreThanOrEqual, Repository} from 'typeorm';
 import { Event } from './event.entity';
 import { Task } from './task.entity';
 import { join } from 'path';
@@ -8,6 +8,8 @@ import { writeFile } from 'node:fs/promises';
 import { ChatGateway } from '../chat/chat.gateway';
 import {RoomService} from "../room/room.service";
 import {UsersService} from "../user/user.service";
+import {format} from "mysql2";
+import { startOfDay, endOfDay, parse } from 'date-fns';
 
 @Injectable()
 export class CalendarService {
@@ -73,22 +75,26 @@ export class CalendarService {
     return imagePath;
   }
 
-  async getTasks(userId: number): Promise<Task[]> {
+  async getTasks(userId: number,date:string): Promise<Task[]> {
     const room = await this.roomService.getUserRoom(userId);
-    return this.TaskRepository.find({
-      where: { room: {
-        id: room.id,
-        } }, relations: ['attendees'],
+
+    const formattedDate = format(date, 'yyyy-MM-dd HH:mm:ss');
+    const tasks = await this.TaskRepository.find({
+      relations: ['attendees'],
     });
+
+    return tasks;
   }
 
-  async getEvents(userId: number): Promise<Event[]> {
+  async getEvents(userId: number,dateString:string): Promise<Event[]> {
     const room = await this.roomService.getUserRoom(userId);
-    return await this.eventRepository.find({
-      where: { room: {
-          id: room.id,
-        } }, relations: ['attendees'],
+
+    // 문자열로 받은 날짜를 Date 객체로 파싱
+    const events = await this.eventRepository.find({
+      relations: ['attendees'],
     });
+
+    return events;
   }
 
   // 할일 편집
@@ -121,8 +127,7 @@ export class CalendarService {
     if (!task) {
       throw new Error('Task not found');
     }
-    const imagePath = await this.saveCompletionImage(completionImage, taskId);
-    task.completionImage = imagePath;
+    task.completionImage = completionImage;
     await this.TaskRepository.save(task);
 
     // 할일 완료 처리
